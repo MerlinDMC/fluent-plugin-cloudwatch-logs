@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'test_helper'
 require 'fileutils'
 
@@ -48,9 +49,9 @@ class CloudwatchLogsOutputTest < Test::Unit::TestCase
     events = get_log_events
     assert_equal(2, events.size)
     assert_equal(time.to_i * 1000, events[0].timestamp)
-    assert_equal('{"cloudwatch":"logs1"}', events[0].message)
+    assert_equal(%Q'{"cloudwatch":"logs1"}\n', events[0].message)
     assert_equal((time.to_i + 1) * 1000, events[1].timestamp)
-    assert_equal('{"cloudwatch":"logs2"}', events[1].message)
+    assert_equal(%Q'{"cloudwatch":"logs2"}\n', events[1].message)
 
     assert_match(/Calling PutLogEvents API/, d.instance.log.logs[0])
   end
@@ -68,7 +69,7 @@ class CloudwatchLogsOutputTest < Test::Unit::TestCase
     events = get_log_events
     assert_equal(1, events.size)
     assert_equal(time.to_i * 1000, events[0].timestamp)
-    assert_equal('{"cloudwatch":"これは日本語です"}', events[0].message)
+    assert_equal(%Q'{"cloudwatch":"これは日本語です"}\n', events[0].message)
   end
 
   def test_write_24h_apart
@@ -86,11 +87,11 @@ class CloudwatchLogsOutputTest < Test::Unit::TestCase
     events = get_log_events
     assert_equal(3, events.size)
     assert_equal((time.to_i - 60 * 60 * 25) * 1000, events[0].timestamp)
-    assert_equal('{"cloudwatch":"logs0"}', events[0].message)
+    assert_equal(%Q'{"cloudwatch":"logs0"}\n', events[0].message)
     assert_equal((time.to_i ) * 1000, events[1].timestamp)
-    assert_equal('{"cloudwatch":"logs1"}', events[1].message)
+    assert_equal(%Q'{"cloudwatch":"logs1"}\n', events[1].message)
     assert_equal((time.to_i + 1) * 1000, events[2].timestamp)
-    assert_equal('{"cloudwatch":"logs2"}', events[2].message)
+    assert_equal(%Q'{"cloudwatch":"logs2"}\n', events[2].message)
   end
 
   def test_write_with_message_keys
@@ -214,7 +215,7 @@ class CloudwatchLogsOutputTest < Test::Unit::TestCase
     events = get_log_events
     assert_equal(2, events.size)
     assert_equal(time.to_i * 1000, events[0].timestamp)
-    assert_equal("{\"cloudwatch\":\"logs1\",\"time\":\"#{time.utc.strftime("%Y-%m-%dT%H:%M:%SZ")}\"}", events[0].message)
+    assert_equal("{\"cloudwatch\":\"logs1\",\"time\":\"#{time.utc.strftime("%Y-%m-%dT%H:%M:%SZ")}\"}\n", events[0].message)
     assert_equal((time.to_i + 1) * 1000, events[1].timestamp)
     assert_equal("{\"cloudwatch\":\"logs2\",\"time\":\"#{(time+1).utc.strftime("%Y-%m-%dT%H:%M:%SZ")}\"}", events[1].message)
   end
@@ -240,9 +241,9 @@ class CloudwatchLogsOutputTest < Test::Unit::TestCase
     events = get_log_events
     assert_equal(2, events.size)
     assert_equal(time.to_i * 1000, events[0].timestamp)
-    assert_equal("{\"cloudwatch\":\"logs1\",\"time\":\"#{time.strftime("%Y-%m-%dT%H:%M:%S%:z")}\"}", events[0].message)
+    assert_equal("{\"cloudwatch\":\"logs1\",\"time\":\"#{time.strftime("%Y-%m-%dT%H:%M:%S%:z")}\"}\n", events[0].message)
     assert_equal((time.to_i + 1) * 1000, events[1].timestamp)
-    assert_equal("{\"cloudwatch\":\"logs2\",\"time\":\"#{(time+1).strftime("%Y-%m-%dT%H:%M:%S%:z")}\"}", events[1].message)
+    assert_equal("{\"cloudwatch\":\"logs2\",\"time\":\"#{(time+1).strftime("%Y-%m-%dT%H:%M:%S%:z")}\"}\n", events[1].message)
   end
 
   def test_log_group_name_key_and_log_stream_name_key
