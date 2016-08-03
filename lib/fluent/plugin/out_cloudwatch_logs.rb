@@ -27,6 +27,9 @@ module Fluent
     config_param :put_log_events_retry_limit, :integer, default: 17
     config_param :put_log_events_disable_retry_limit, :bool, default: false
 
+    desc "The format of the entry content. The default is json."
+    config_param :format, :string, default: 'json', skip_accessor: true
+
     MAX_EVENTS_SIZE = 1_048_576
     MAX_EVENT_SIZE = 256 * 1024
     EVENT_HEADER_SIZE = 26
@@ -55,6 +58,9 @@ module Fluent
       unless [conf['log_stream_name'], conf['use_tag_as_stream'], conf['log_stream_name_key']].compact.size == 1
         raise ConfigError, "Set only one of log_stream_name, use_tag_as_stream and log_stream_name_key"
       end
+
+      @formatter = Plugin.new_formatter(@format)
+      @formatter.configure(conf)
     end
 
     def start
@@ -129,7 +135,7 @@ module Fluent
           if @message_keys
             message = @message_keys.split(',').map {|k| record[k].to_s }.join(' ')
           else
-            message = record.to_json
+            message = @formatter.format(t, time, record)
           end
 
           # CloudWatchLogs API only accepts valid UTF-8 strings
